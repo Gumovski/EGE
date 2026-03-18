@@ -227,6 +227,8 @@ def get_result(task_number, task_type):
 
 
 def get_results():
+    if not os.path.exists(db_path()):
+        create_new_db()
     with sqlite3.connect(db_path()) as connection:
         cursor = connection.cursor()
         cursor.execute('SELECT * FROM test')
