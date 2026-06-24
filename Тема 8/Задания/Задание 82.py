@@ -1,4 +1,5 @@
 # Решение
+from itertools import*
 
 
 
