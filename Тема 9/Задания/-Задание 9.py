@@ -1,6 +1,6 @@
 # Решение
 count_rows = 0
-with open('Задание 9.txt') as file:
+with open('-Задание 9.txt') as file:
     for line in file:
         s = list(map(int,line.split('\t')))
         s.sort()
@@ -11,12 +11,8 @@ with open('Задание 9.txt') as file:
             suma += s[i]
             if s[i] == m:
                 c += 1
-        if c != 1:
-            continue
-        if len(set(s)) > 5:
-            continue
-        suma =  suma - m
-        if (m * 3) > (suma):
+        suma = suma - m
+        if c == 1 and len(set(s)) <= 5 and (m * 3) > (suma / 5):
             count_rows += 1
 
 print(count_rows)
@@ -24,7 +20,7 @@ print(count_rows)
 
 
 
-answer = 485
+answer = 684
 
 #
 
