@@ -373,11 +373,12 @@ li {
     padding: 1.5rem;
     box-shadow: var(--shadow-md);
     border-left: 4px solid var(--primary);
+    margin: 0.5rem 0 1rem 0 !important;
 }
 
 .task-card h4 {
     color: var(--secondary);
-    margin-bottom: 1rem;
+    margin: 0 0 0.5rem 0;
 }
 
 .solution {
