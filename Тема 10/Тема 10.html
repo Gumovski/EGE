@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тема 10. IP-адреса и маски сетей</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/prism.css">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1><span class="emoji">🌐</span>IP-адреса и маски сетей</h1>
+        <p>Теория, библиотека ipaddress и разбор всех типов заданий Темы 10</p>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="#theory">📝 Теория</a></li>
+            <li><a href="#library">🐍 Библиотека ipaddress</a></li>
+            <li><a href="#type1">1️⃣ Подсчёт адресов по условию</a></li>
+            <li><a href="#type2">2️⃣ Два узла в одной сети</a></li>
+            <li><a href="#type3">3️⃣ Границы сети (мин/макс адрес)</a></li>
+            <li><a href="#type4">4️⃣ Подбор байта маски</a></li>
+            <li><a href="#summary">📊 Сводная таблица</a></li>
+        </ul>
+    </nav>
+
+    <main class="content">
+        <section id="theory" class="section">
+            <h2><span class="emoji">📝</span>Теория: маска и адрес сети</h2>
+
+            <ul>
+                <li><strong>IP-адрес</strong> — уникальный 32-битный адрес устройства в сети, записывается как 4 байта через точку (например, <span class="code">192.168.1.1</span>).</li>
+                <li><strong>Маска сети</strong> — двоичное число, в котором сначала (в старших разрядах) стоят единицы, а с некоторого места — нули. Единицы определяют, какая часть адреса относится к <strong>номеру сети</strong>, нули — к <strong>номеру узла</strong> в этой сети.</li>
+                <li><strong>Адрес сети (Host)</strong> получается применением побитовой конъюнкции (И) к IP-адресу узла и маске: <span class="code">Host = Mask & IP</span>.</li>
+                <li><strong>Широковещательный адрес</strong> — адрес, в котором на месте нулей маски стоят единицы. Он и адрес сети <strong>не могут</strong> быть присвоены обычному устройству.</li>
+                <li><strong>Количество адресов в сети</strong> = 2 в степени количества нулевых бит маски (это количество включает адрес сети и широковещательный адрес).</li>
+            </ul>
+
+            <div class="example-box">
+                <strong>Пример:</strong> IP-адрес узла — <span class="code">231.32.255.131</span>, маска — <span class="code">255.255.240.0</span>. Тогда адрес сети — <span class="code">231.32.240.0</span>.
+            </div>
+
+            <h3>Маска в двух видах записи</h3>
+            <p>Одну и ту же маску можно записать либо количеством единичных бит (CIDR, например <span class="code">/24</span>), либо four-byte-строкой (например <span class="code">255.255.255.0</span>). Таблица ниже помогает быстро переводить один байт маски между этими видами:</p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Байт маски (двоичный)</th>
+                        <th>Байт маски (десятичный)</th>
+                        <th>Сетевых бит в байте</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr><td><span class="code">0000 0000</span></td><td>0</td><td>0</td></tr>
+                    <tr><td><span class="code">1000 0000</span></td><td>128</td><td>1</td></tr>
+                    <tr><td><span class="code">1100 0000</span></td><td>192</td><td>2</td></tr>
+                    <tr><td><span class="code">1110 0000</span></td><td>224</td><td>3</td></tr>
+                    <tr><td><span class="code">1111 0000</span></td><td>240</td><td>4</td></tr>
+                    <tr><td><span class="code">1111 1000</span></td><td>248</td><td>5</td></tr>
+                    <tr><td><span class="code">1111 1100</span></td><td>252</td><td>6</td></tr>
+                    <tr><td><span class="code">1111 1110</span></td><td>254</td><td>7</td></tr>
+                    <tr><td><span class="code">1111 1111</span></td><td>255</td><td>8</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="library" class="section">
+            <h2><span class="emoji">🐍</span>Библиотека ipaddress</h2>
+
+            <p>Библиотека <strong>ipaddress</strong> избавляет от ручной побитовой арифметики: она сама переводит адреса в двоичный вид, вычисляет адрес сети и умеет перебирать все адреса сети циклом. Для заданий Темы 10 нужна фактически одна функция:</p>
+
+            <div class="success">
+                <strong>💡 Импорт:</strong>
+                <div class="pre-code">
+<pre><code class="language-python">from ipaddress import ip_network</code></pre>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <strong>Синтаксис:</strong>
+                <div class="pre-code">
+<pre><code class="language-python">ip_network('IP/маска', strict=False)</code></pre>
+                </div>
+                <p>Маску после <span class="code">/</span> можно указать <strong>числом бит</strong> (<span class="code">/24</span>) или <strong>десятичной строкой</strong> (<span class="code">/255.255.255.0</span>) — оба варианта равнозначны.</p>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Параметр strict:</strong> если в переданном адресе есть «единицы» в части номера узла (т.е. это не «чистый» адрес сети), без <span class="code">strict=False</span> Python выбросит ошибку. Поэтому в задачах Темы 10 <span class="code">strict=False</span> указывается <strong>всегда</strong>.
+            </div>
+
+            <h3>Нужные атрибуты и приёмы</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Код</th>
+                        <th>Что возвращает</th>
+                        <th>В каком типе заданий нужен</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr><td><span class="code">for ip in net:</span></td><td>перебор всех адресов сети по очереди</td><td>Тип 1, Тип 2</td></tr>
+                    <tr><td><span class="code">f'{ip:b}'</span></td><td>двоичная строка адреса (32 символа, без точек)</td><td>Тип 1, Тип 2</td></tr>
+                    <tr><td><span class="code">net.network_address</span></td><td>адрес сети</td><td>Тип 2, Тип 3, Тип 4</td></tr>
+                    <tr><td><span class="code">net.broadcast_address</span></td><td>широковещательный адрес</td><td>Тип 3</td></tr>
+                    <tr><td><span class="code">net.netmask</span></td><td>маска сети в виде IP-адреса</td><td>Тип 4</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="type1" class="section">
+            <h2><span class="emoji">1️⃣</span>Тип 1. Подсчёт адресов по битовому условию</h2>
+
+            <p>Дан IP-адрес узла и маска сети целиком. Нужно посчитать, сколько адресов сети удовлетворяет какому-то условию на биты (количество единиц, соотношение нулей и единиц в байте и т.п.).</p>
+
+            <div class="task-card">
+                <h4>Пример</h4>
+                <div class="solution">
+                    <p>Сеть задана IP-адресом <span class="code">198.51.100.80</span> и маской <span class="code">255.255.255.248</span>. Сколько в этой сети IP-адресов, для которых количество единиц в двоичной записи адреса <strong>не кратно 3</strong>?</p>
+                </div>
+            </div>
+
+            <h3>Способ 1. Устное (ручное) решение</h3>
+            <div class="task-card">
+                <div class="solution">
+                    <p><strong>Шаг 1.</strong> Переводим маску в биты: <span class="code">248</span> = <span class="code">1111 1000</span> → 5 сетевых бит в последнем байте. Всего сетевых бит: 24 + 5 = 29, значит на узел остаётся <strong>3 бита</strong> → в сети <strong>2³ = 8 адресов</strong>.</p>
+                    <p><strong>Шаг 2.</strong> Считаем количество единиц в неизменной части адреса (первые 3 байта + старшие 5 бит последнего байта):</p>
+                    <p><span class="code">198</span> = <span class="code">1100 0110</span> (4 единицы), <span class="code">51</span> = <span class="code">0011 0011</span> (4 единицы), <span class="code">100</span> = <span class="code">0110 0100</span> (3 единицы), старшие 5 бит байта <span class="code">80</span> = <span class="code">01010</span> (2 единицы). Итого фиксированных единиц: 4+4+3+2 = <strong>13</strong>.</p>
+                    <p><strong>Шаг 3.</strong> Перебираем оставшиеся 3 бита узла (000…111) и прибавляем количество единиц в них к 13 — если сумма <strong>не кратна 3</strong>, адрес подходит:</p>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                            <tr><th>3 бита узла</th><th>Адрес</th><th>Единиц в узле</th><th>Всего единиц</th><th>Подходит?</th></tr>
+                            </thead>
+                            <tbody>
+                            <tr><td><span class="code">000</span></td><td>198.51.100.80</td><td>0</td><td>13</td><td>✅ да (13 % 3 = 1)</td></tr>
+                            <tr><td><span class="code">001</span></td><td>198.51.100.81</td><td>1</td><td>14</td><td>✅ да (14 % 3 = 2)</td></tr>
+                            <tr><td><span class="code">010</span></td><td>198.51.100.82</td><td>1</td><td>14</td><td>✅ да</td></tr>
+                            <tr><td><span class="code">011</span></td><td>198.51.100.83</td><td>2</td><td>15</td><td>❌ нет (15 % 3 = 0)</td></tr>
+                            <tr><td><span class="code">100</span></td><td>198.51.100.84</td><td>1</td><td>14</td><td>✅ да</td></tr>
+                            <tr><td><span class="code">101</span></td><td>198.51.100.85</td><td>2</td><td>15</td><td>❌ нет</td></tr>
+                            <tr><td><span class="code">110</span></td><td>198.51.100.86</td><td>2</td><td>15</td><td>❌ нет</td></tr>
+                            <tr><td><span class="code">111</span></td><td>198.51.100.87</td><td>3</td><td>16</td><td>✅ да (16 % 3 = 1)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p><strong>Ответ:</strong> подходит <strong>5</strong> адресов из 8.</p>
+                </div>
+            </div>
+
+            <div class="success">
+                <strong>💡 Когда считать вручную:</strong> способ 1 удобен, если у сети мало адресов (обычно ≤ 16, маска вида <span class="code">/28</span> и «длиннее»). Если адресов сотни или тысячи — перебор вручную нереален, нужна программа.
+            </div>
+
+            <h3>Способ 2. Программное решение</h3>
+            <div class="task-card">
+                <div class="solution">
+                    <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">from ipaddress import ip_network
+
+net = ip_network('198.51.100.80/255.255.255.248', False)
+
+count = 0
+for ip in net:
+    if f'{ip:b}'.count('1') % 3 != 0:
+        count += 1
+print(count)</code></pre>
+                    </div>
+                    <p><strong>Результат:</strong> <span class="code">5</span> — совпадает с ручным подсчётом.</p>
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Если сеть большая</strong> (маска вида <span class="code">/20</span> и «короче», тысячи адресов), ручной перебор всех адресов невозможен — метод (шаги 1–2) остаётся тем же для определения количества и структуры бит, но подсчёт по условию делает только программа (способ 2).
+            </div>
+        </section>
+
+        <section id="type2" class="section">
+            <h2><span class="emoji">2️⃣</span>Тип 2. Два узла в одной сети — находим границы сети</h2>
+
+            <p>Даны два IP-адреса, про которые известно, что они принадлежат <strong>одной сети</strong>, но маска не задана явно. Нужно найти наименьшую (самую «строгую») сеть, в которую оба адреса помещаются одновременно, а затем что-то посчитать внутри этой сети.</p>
+
+            <div class="task-card">
+                <h4>Пример</h4>
+                <div class="solution">
+                    <p>Узлы с IP-адресами <span class="code">133.44.76.210</span> и <span class="code">133.44.77.5</span> принадлежат одной сети. Какое наименьшее количество IP-адресов, в двоичной записи которых ровно 14 единиц, может содержаться в этой сети?</p>
+                </div>
+            </div>
+
+            <h3>Способ 1. Устное (ручное) решение</h3>
+            <div class="task-card">
+                <div class="solution">
+                    <p><strong>Шаг 1.</strong> Чтобы сеть была <strong>наименьшей</strong> (значит содержала меньше «лишних» адресов), нужно взять маску <strong>максимально возможной длины</strong> — такую, при которой оба адреса всё ещё попадают в одну сеть. Для этого сравниваем адреса побитно и ищем, где они расходятся.</p>
+                    <p>Первые два байта совпадают: <span class="code">133.44</span> = <span class="code">133.44</span>. Третий байт сравниваем в двоичном виде:</p>
+                    <div class="pre-code">
+<pre><code class="language-python">76 = 0100 1100
+77 = 0100 1101</code></pre>
+                    </div>
+                    <p>Байты совпадают в первых <strong>7</strong> битах и расходятся только в последнем (младшем) бите. Значит совпадающих бит всего <strong>16 + 7 = 23</strong>.</p>
+                    <p><strong>Шаг 2.</strong> Значит наибольшая маска, при которой оба узла в одной сети — <span class="code">/23</span>. Адрес сети получаем, обнулив младший бит третьего байта: третий байт <span class="code">0100 1100</span> = <strong>76</strong> (чётное число). Сеть — <span class="code">133.44.76.0/23</span>.</p>
+                    <p><strong>Шаг 3.</strong> У сети <span class="code">/23</span> остаётся 9 бит на узел → <strong>2⁹ = 512 адресов</strong>. Перебрать 512 адресов вручную и посчитать среди них адреса с ровно 14 единицами — нереально быстро, поэтому здесь способ 1 заканчивается на определении границ сети, а подсчёт передаём программе.</p>
+                </div>
+            </div>
+
+            <h3>Способ 2. Программное решение</h3>
+            <div class="task-card">
+                <div class="solution">
+                    <p>Найти максимальную длину маски программно можно, перебирая длину маски от 32 к 1 и проверяя, совпадает ли <span class="code">network_address</span> обоих адресов:</p>
+                    <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">from ipaddress import ip_network
+
+a1, a2 = '133.44.76.210', '133.44.77.5'
+
+for prefix in range(32, 0, -1):
+    net1 = ip_network(f'{a1}/{prefix}', False)
+    net2 = ip_network(f'{a2}/{prefix}', False)
+    if net1.network_address == net2.network_address:
+        break
+
+net = ip_network(f'{a1}/{prefix}', False)
+print('Сеть:', net)
+
+count = sum(1 for ip in net if f'{ip:b}'.count('1') == 14)
+print('Ответ:', count)</code></pre>
+                    </div>
+                    <p><strong>Результат:</strong> сеть <span class="code">133.44.76.0/23</span>, ответ — <span class="code">126</span> адресов.</p>
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Усложнённые варианты этого типа:</strong> вместо второго конкретного адреса может быть дано лишь его <strong>свойство</strong> (например, «первый байт совпадает с четвёртым, а второй — с третьим») или условие может касаться не отдельного адреса, а <strong>соотношения</strong> количества единиц в адресе сети и номере узла. Метод решения остаётся тем же (найти максимально длинную маску, при которой условие выполняется), но подходящий адрес или маску в таких случаях приходится дополнительно подбирать перебором внутри программы.
+            </div>
+        </section>
+
+        <section id="type3" class="section">
+            <h2><span class="emoji">3️⃣</span>Тип 3. Наименьший/наибольший адрес узла в сети</h2>
+
+            <p>Дан IP-адрес одного из узлов сети и маска. Нужно найти наименьший или наибольший адрес, который можно присвоить обычному устройству (то есть не адрес сети и не широковещательный адрес).</p>
+
+            <div class="task-card">
+                <h4>Пример — наименьший адрес</h4>
+                <div class="solution">
+                    <p>Сеть задана IP-адресом узла <span class="code">172.20.5.130</span> и маской <span class="code">255.255.255.192</span>. Определите наименьший IP-адрес, который может быть присвоен компьютеру.</p>
+
+                    <h4>Способ 1. Устное решение</h4>
+                    <p><strong>Шаг 1.</strong> Маска <span class="code">192</span> = <span class="code">1100 0000</span> → 2 сетевых бита в последнем байте. Всего сетевых бит: 24+2=26, на узел остаётся 6 бит.</p>
+                    <p><strong>Шаг 2.</strong> Находим адрес сети (Host & Mask): последний байт <span class="code">130</span> = <span class="code">1000 0010</span>, оставляем первые 2 бита, остальные обнуляем → <span class="code">1000 0000</span> = <strong>128</strong>. Адрес сети: <span class="code">172.20.5.128</span>.</p>
+                    <p><strong>Шаг 3.</strong> Наименьший адрес узла — это адрес сети <strong>+ 1</strong> (последний бит узла ставим в 1, адрес сети трогать нельзя): <span class="code">172.20.5.129</span>.</p>
+                    <p><strong>Шаг 4.</strong> Сумма октетов: 172+20+5+129 = <strong>326</strong>.</p>
+
+                    <h4>Способ 2. Программное решение</h4>
+                    <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">from ipaddress import ip_network
+
+net = ip_network('172.20.5.130/255.255.255.192', False)
+smallest = list(net.hosts())[0]
+print(smallest, sum(map(int, str(smallest).split('.'))))</code></pre>
+                    </div>
+                    <p><strong>Результат:</strong> <span class="code">172.20.5.129</span>, сумма октетов — <span class="code">326</span>.</p>
+                </div>
+            </div>
+
+            <div class="task-card">
+                <h4>Пример — наибольший адрес</h4>
+                <div class="solution">
+                    <p>Сеть задана IP-адресом узла <span class="code">172.20.5.130</span> и маской <span class="code">255.255.255.192</span>. Найдите наибольший IP-адрес, который может быть назначен компьютеру.</p>
+
+                    <h4>Способ 1. Устное решение</h4>
+                    <p><strong>Шаг 1–2.</strong> Как и выше, адрес сети — <span class="code">172.20.5.128</span>, на узел отведено 6 бит.</p>
+                    <p><strong>Шаг 3.</strong> Наибольший адрес узла получают, поставив <strong>все биты узла в единицы, кроме последнего</strong> (последний бит = 0, иначе получится широковещательный адрес). Последний байт: сетевые биты <span class="code">10</span> + узловые биты всё <span class="code">1</span>, кроме последнего → <span class="code">1011 1110</span> = <strong>190</strong>.</p>
+                    <p>Наибольший адрес: <span class="code">172.20.5.190</span>.</p>
+
+                    <h4>Способ 2. Программное решение</h4>
+                    <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">from ipaddress import ip_network
+
+net = ip_network('172.20.5.130/255.255.255.192', False)
+largest = list(net.hosts())[-1]
+print(largest)</code></pre>
+                    </div>
+                    <p><strong>Результат:</strong> <span class="code">172.20.5.190</span>.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="type4" class="section">
+            <h2><span class="emoji">4️⃣</span>Тип 4. Подбор значения байта маски</h2>
+
+            <p>Даны два IP-адреса и информация о том, находятся ли они в одной сети или в разных (при одинаковой маске). Нужно найти минимальное или максимальное возможное значение конкретного байта маски.</p>
+
+            <div class="task-card">
+                <h4>Пример — узлы в одной сети, максимальный байт маски</h4>
+                <div class="solution">
+                    <p>Два узла в одной сети: <span class="code">10.20.30.40</span> и <span class="code">10.20.35.40</span>. Укажите наибольшее возможное значение третьего слева байта маски сети.</p>
+
+                    <h4>Способ 1. Устное решение</h4>
+                    <p>Чтобы значение маски (а значит и её байта) было <strong>наибольшим</strong>, нужна максимально длинная общая часть — сравниваем адреса побитно. Первые два байта совпадают (<span class="code">10.20</span>), сравниваем третий байт:</p>
+                    <div class="pre-code">
+<pre><code class="language-python">30 = 0001 1110
+35 = 0010 0011</code></pre>
+                    </div>
+                    <p>Байты совпадают в первых <strong>2</strong> битах (<span class="code">00</span>) и расходятся на третьем. Значит совпадающих бит всего <strong>16 + 2 = 18</strong>.</p>
+                    <p>Максимальная маска — <span class="code">/18</span>. Третий байт маски: первые 2 бита — единицы, остальные — нули → <span class="code">1100 0000</span> = <strong>192</strong>.</p>
+
+                    <h4>Способ 2. Программное решение</h4>
+                    <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">from ipaddress import ip_network
+
+a1, a2 = '10.20.30.40', '10.20.35.40'
+
+for prefix in range(32, 0, -1):
+    net1 = ip_network(f'{a1}/{prefix}', False)
+    net2 = ip_network(f'{a2}/{prefix}', False)
+    if net1.network_address == net2.network_address:
+        break
+
+mask = ip_network(f'{a1}/{prefix}', False).netmask
+print(str(mask).split('.')[2])</code></pre>
+                    </div>
+                    <p><strong>Результат:</strong> маска <span class="code">255.255.192.0</span>, третий байт — <span class="code">192</span>.</p>
+                </div>
+            </div>
+
+            <div class="task-card">
+                <h4>Пример — узлы в разных сетях, минимальный байт маски</h4>
+                <div class="solution">
+                    <p>Узлы <span class="code">10.20.30.40</span> и <span class="code">10.20.31.40</span> находятся в <strong>разных</strong> сетях с одинаковой маской. Укажите наименьшее возможное значение третьего слева байта этой маски.</p>
+
+                    <h4>Способ 1. Устное решение</h4>
+                    <p>Чтобы адреса оказались в разных сетях, маска должна включать в сетевую часть хотя бы тот бит, в котором адреса впервые расходятся — а чтобы значение маски (и её байта) было <strong>наименьшим</strong>, берём минимально достаточную длину маски, то есть ровно до первого различающегося бита. Первые два байта совпадают (<span class="code">10.20</span>), сравниваем третий байт:</p>
+                    <div class="pre-code">
+<pre><code class="language-python">30 = 0001 1110
+31 = 0001 1111</code></pre>
+                    </div>
+                    <p>Байты совпадают в первых <strong>7</strong> битах и расходятся только в последнем. Значит нужно захватить в сетевую часть 16 + 8 = 24 бита.</p>
+                    <p>Минимальная маска — <span class="code">/24</span>. Третий байт маски: все 8 бит — единицы → <strong>255</strong>.</p>
+
+                    <h4>Способ 2. Программное решение</h4>
+                    <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">from ipaddress import ip_network
+
+a1, a2 = '10.20.30.40', '10.20.31.40'
+
+for prefix in range(1, 33):
+    net1 = ip_network(f'{a1}/{prefix}', False)
+    net2 = ip_network(f'{a2}/{prefix}', False)
+    if net1.network_address != net2.network_address:
+        break
+
+mask = ip_network(f'{a1}/{prefix}', False).netmask
+print(str(mask).split('.')[2])</code></pre>
+                    </div>
+                    <p><strong>Результат:</strong> маска <span class="code">255.255.255.0</span>, третий байт — <span class="code">255</span>.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="summary" class="section">
+            <h2><span class="emoji">📊</span>Сводная таблица типов заданий</h2>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Тип</th>
+                        <th>Что дано</th>
+                        <th>Что найти</th>
+                        <th>Ключевой приём</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr><td>Тип 1</td><td>IP-адрес + маска целиком</td><td>кол-во адресов сети, удовлетворяющих условию на биты</td><td>перебор адресов сети, <span class="code">f'{ip:b}'.count('1')</span></td></tr>
+                    <tr><td>Тип 2</td><td>два узла в одной сети (маска не задана)</td><td>границы наименьшей общей сети + подсчёт по условию</td><td>поиск максимального <span class="code">prefix</span> с равным <span class="code">network_address</span></td></tr>
+                    <tr><td>Тип 3</td><td>IP-адрес + маска целиком</td><td>наименьший/наибольший адрес узла</td><td><span class="code">net.hosts()</span> или адрес сети ±1 / широковещательный −1</td></tr>
+                    <tr><td>Тип 4</td><td>два узла в одной / разных сетях</td><td>мин./макс. значение байта маски</td><td>поиск граничного <span class="code">prefix</span>, при котором сети совпадают/различаются</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <a href="#" id="backToTop" class="back-to-top" title="Вернуться в начало">↑</a>
+</div>
+
+<style>
+    .back-to-top {
+        display: none;
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #3498db;
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 50px;
+        font-size: 24px;
+        text-decoration: none;
+        cursor: pointer;
+        z-index: 999;
+        transition: all 0.3s ease;
+    }
+
+    .back-to-top.visible {
+        display: block;
+    }
+
+    .back-to-top:hover {
+        background: #2980b9;
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    code {
+        font-family: 'Courier New', monospace;
+        background: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.95em;
+    }
+
+    .section ul {
+        margin-left: 20px;
+        margin-top: 10px;
+    }
+
+    .section ul li {
+        margin-bottom: 8px;
+        line-height: 1.7;
+    }
+
+    .pre-code {
+        margin: 15px 0;
+    }
+</style>
+
+<script>
+    const backToTop = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+            backToTop.classList.add('visible');
+        } else {
+            backToTop.classList.remove('visible');
+        }
+    });
+
+    document.getElementById('backToTop').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    window.addEventListener('scroll', function() {
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.nav a');
+
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+            if (pageYOffset >= sectionTop - 200) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.style.background = '';
+            if (link.getAttribute('href') === '#' + current) {
+                link.style.background = '#3498db';
+            }
+        });
+    });
+</script>
+<script src="../assets/js/prism.js"></script>
+</body>
+</html>
