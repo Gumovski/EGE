@@ -19,7 +19,6 @@ print(count_rows)
 
 
 
-
 answer = 95
 
 #

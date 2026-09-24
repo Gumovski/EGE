@@ -1,6 +1,7 @@
 # Решение
+from ipaddress import ip_network
 
-
+net = ip_network(f'')
 
 
 
