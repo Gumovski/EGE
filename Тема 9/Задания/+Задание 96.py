@@ -14,6 +14,7 @@ with open('Задание96.txt') as file:
             if s1[i] == s[i]:
                 y += 1
         if len(set(s)) == 7 and y == 7 and (s1[0] + s1[-1]) / 2 > m:
+            res.append([ans,sum(s)])
             ans += 1
 
 print(res)
