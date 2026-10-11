@@ -23,7 +23,7 @@ print(res)
 #9297
 
 
-answer = 9297
+answer = 1355
 
 #
 
