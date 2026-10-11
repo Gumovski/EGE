@@ -1,7 +1,7 @@
 # Решение
 ans = 0
 d = [{} for j in range(6)]
-with open('Задание 18.txt') as file:
+with open('Пример18.txt') as file:
     for line in file:
         s = list(map(int,line.split('\t')))
         for i in range(6):
@@ -10,15 +10,15 @@ with open('Задание 18.txt') as file:
             else:
                 d[i][s[i]] += 1
 
-with open('Задание 18.txt') as file:
+with open('Пример18.txt') as file:
     for line in file:
         s = list(map(int,line.split('\t')))
         x = 0
         for i in range(6):
-            if s.count(s[i]) == 1 and d[i][s[i]] > 150:
+            if s.count(s[i]) == 1 and d[i][s[i]] > 170:
                 x += 1
 
-        if x >= 5:
+        if x >= 4:
             ans += 1
 
 print(ans)
@@ -26,7 +26,7 @@ print(ans)
 
 
 
-answer = 9527
+answer = 799
 
 #
 
