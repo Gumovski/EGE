@@ -18,7 +18,7 @@ for n in range(1,1000):
     r = int(t,3)
     res.append([n,r])
 print(res)
-
+#26
 
 answer = 26
 
