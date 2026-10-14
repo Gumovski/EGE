@@ -27,7 +27,6 @@ for i in range(2):
     right(90)
     forward(8 * k)
     right(90)
-
 up()
 for x in range(-20,20):
     for y in range(-20,20):
