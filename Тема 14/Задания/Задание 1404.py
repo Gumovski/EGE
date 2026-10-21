@@ -1,5 +1,7 @@
 # Решение
-
+for x in range(37):
+    for y in range(37):
+        r =
 
 
 
