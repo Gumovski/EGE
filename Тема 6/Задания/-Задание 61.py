@@ -1,12 +1,12 @@
 # Решение
-'''
+
 from turtle import*
 
 tracer(0)
 screensize(2000,2000)
 k = 20
 
-x = 33
+x = 4
 forward((x + 2) * k)
 for i in range(4):
     forward(x * k)
@@ -25,12 +25,11 @@ for z in range(-20,100):
         dot(3)
 
 exitonclick()
-'''
 s = []
 for x in range(1,100):
     s1 = (x+2 + x)**2
     s2 = ((x*3)-1)**2
-    s3 = (x*2) * (((x*3)-1) - (x * 2))
+    s3 = (x*2-1) * ((x+2 + x + 1) - 2)
     res = s3
     s.append(res)
     if res > 2000:
@@ -40,7 +39,7 @@ for x in range(1,100):
 
 
 
-answer = 33
+answer = 23
 
 #
 
