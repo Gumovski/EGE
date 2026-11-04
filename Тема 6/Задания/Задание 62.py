@@ -1,10 +1,34 @@
 # Решение
+from turtle import*
+
+tracer(0)
+screensize(2000,2000)
+k = 3
+
+right(180)
+for i in range(9):
+    forward(59*k)
+    left(90)
+    forward(84 * k)
+    left(90)
+up()
+
+forward(18*k)
+left(90)
+forward(38*k)
+right(90)
+
+down()
+for i in range(9):
+    forward(120 * k)
+    right(90)
+    forward(99 * k)
+    right(90)
+
+up()
 
 
-
-
-
-
+exitonclick()
 
 answer = ...
 
