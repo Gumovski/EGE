@@ -1,22 +1,10 @@
 # Решение
-'''
-dp = {}
-for n in range(0,1000000000):
-    if n == 0:
-        dp[n] = 0
-    elif n % 2 != 0:
-        dp[n] = dp[n-1] + 1
-    elif n % 2 == 0 and n > 0:
-        dp[n] = dp[n//2]
+from itertools import combinations
 
+result = list(combinations('1234567890QWERTYUIOPASDFGHJKLZ', 2))
+print(len(result))
+print((result))
 
-c = 0
-for i in range(1,1000000000):
-    if dp[i] == 2:
-        c += 1
-print(c)
-#
-'''
 
 
 
