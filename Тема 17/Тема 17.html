@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тема 17. Обработка числовых последовательностей</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/prism.css">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1><span class="emoji">🔢</span>Тема 17. Обработка числовых последовательностей</h1>
+        <p>Чтение файла, перебор пар, приёмы работы с условиями</p>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="#intro">📝 Введение</a></li>
+            <li><a href="#reading">📂 Чтение данных</a></li>
+            <li><a href="#pairs">👯 Соседние пары</a></li>
+            <li><a href="#min-condition">🔽 Минимум по условию</a></li>
+            <li><a href="#xor">⚡ Исключающее ИЛИ</a></li>
+            <li><a href="#all-pairs">🔁 Любые два элемента</a></li>
+        </ul>
+    </nav>
+
+    <main class="content">
+
+        <section id="intro" class="section">
+            <h2><span class="emoji">📝</span>Введение</h2>
+            <p>
+                В задании 17 ЕГЭ по информатике дан файл с последовательностью целых чисел.
+                Нужно проанализировать <strong>пары</strong> (или тройки) элементов,
+                удовлетворяющих заданным условиям.
+            </p>
+            <p>Типовая формулировка задачи выглядит так:</p>
+            <div class="example-box">
+                <h4>📋 Пример условия задачи:</h4>
+                <p>
+                    Файл содержит последовательность целых чисел, не превышающих по модулю 10 000.
+                    Назовём парой два идущих подряд элемента последовательности.
+                    Определите количество таких пар, в которых запись ровно одного элемента
+                    заканчивается цифрой 6, а сумма квадратов элементов пары меньше, чем квадрат
+                    наименьшего из элементов последовательности, запись которых заканчивается цифрой 6.
+                </p>
+                <p style="margin-top: 10px;">
+                    В ответе запишите два числа: сначала количество найденных пар,
+                    затем максимальную сумму квадратов элементов этих пар.
+                </p>
+            </div>
+            <p style="margin-top: 15px;">Обратите внимание на два важных момента в условии:</p>
+            <ul>
+                <li><strong>Что считать парой:</strong> два идущих подряд элемента или любые два различных элемента — от этого зависит структура циклов.</li>
+                <li><strong>Что вывести:</strong> обычно два числа — количество подходящих пар и максимум (или минимум) какой-то величины по этим парам.</li>
+            </ul>
+        </section>
+
+        <section id="reading" class="section">
+            <h2><span class="emoji">📂</span>Чтение данных из файла</h2>
+
+            <p>
+                Все числа из файла удобно сразу загрузить в список целых чисел —
+                дальше работа идёт только с ним.
+            </p>
+
+            <div class="example-box">
+                <h4>📐 Шаблон чтения последовательности:</h4>
+                <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">nums = list(map(int, open('17.1.txt').readlines()))</code></pre>
+                </div>
+            </div>
+
+            <p>Что происходит в этой строке, справа налево:</p>
+            <ul>
+                <li><span class="code">open('17.1.txt')</span> — открывает файл;</li>
+                <li><span class="code">.readlines()</span> — читает все строки в список строк (у каждой на конце <span class="code">\n</span>);</li>
+                <li><span class="code">map(int, ...)</span> — применяет <span class="code">int()</span> к каждой строке;</li>
+                <li><span class="code">list(...)</span> — превращает результат в список чисел.</li>
+            </ul>
+
+            <div class="success">
+                <strong>✅ Полезно знать:</strong> функция <span class="code">int()</span> сама игнорирует
+                пробелы и символы перевода строки <span class="code">\n</span>, поэтому дополнительно
+                очищать строки через <span class="code">strip()</span> не нужно.
+            </div>
+
+            <h3>🔹 Альтернативная запись через списковое включение</h3>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">nums = [int(x) for x in open('17.2.txt')]</code></pre>
+            </div>
+            <p>Результат тот же самый — выбирайте вариант, который вам понятнее.</p>
+        </section>
+
+        <section id="pairs" class="section">
+            <h2><span class="emoji">👯</span>Перебор соседних пар</h2>
+
+            <p>
+                Если парой называются <strong>два идущих подряд элемента</strong>, достаточно одного
+                цикла по индексам. На каждой итерации смотрим на элементы
+                <span class="code">nums[i]</span> и <span class="code">nums[i + 1]</span>.
+            </p>
+
+            <div class="task-card">
+                <h4>Задача:</h4>
+                <p>
+                    Файл содержит последовательность целых чисел. Назовём парой два идущих подряд
+                    элемента последовательности. Определите количество таких пар, в которых запись
+                    ровно одного элемента заканчивается цифрой 6, а сумма квадратов элементов пары
+                    меньше, чем квадрат наименьшего из элементов последовательности, запись которых
+                    заканчивается цифрой 6. В ответе запишите количество пар и максимальную сумму
+                    квадратов элементов этих пар.
+                </p>
+                <p style="margin-top: 10px;">Фрагмент файла <span class="code">17.1.txt</span>:</p>
+                <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-none">5196
+-2074
+-1943
+3612
+4303
+-9995
+2257
+9386
+-7653
+-235
+436
+9738
+983</code></pre>
+                </div>
+
+                <div class="success">
+                    <strong>💡 Подсказка:</strong> Сначала отдельным проходом найдите наименьший элемент,
+                    оканчивающийся на 6, — он нужен в условии проверки каждой пары.
+                </div>
+
+                <h4>Решение:</h4>
+
+                <h5 style="color: #495057; margin-top: 25px;">💡 Полный код решения:</h5>
+                <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">nums = list(map(int, open('17.1.txt').readlines()))
+
+# Проход 1: ищем наименьший элемент, оканчивающийся на 6
+min_num = 0
+for num in nums:
+    if abs(num) % 10 == 6:
+        min_num = min(min_num, num)
+
+# Проход 2: перебираем соседние пары
+count = 0
+m = 0
+for i in range(len(nums) - 1):
+    if ((abs(nums[i]) % 10 == 6) != (abs(nums[i + 1]) % 10 == 6)) and (nums[i] ** 2 + nums[i + 1] ** 2 &lt; min_num ** 2):
+        count += 1
+        m = max(m, nums[i] ** 2 + nums[i + 1] ** 2)
+print(count, m)  # Ответ: 720 99266105</code></pre>
+                </div>
+            </div>
+
+            <h3>🔑 Ключевые моменты решения</h3>
+            <ul>
+                <li><strong>Два прохода по данным:</strong> сначала ищем значение, участвующее в условии (наименьший элемент на 6), затем — сами пары.</li>
+                <li><strong>Границы цикла:</strong> <span class="code">range(len(nums) - 1)</span>, чтобы <span class="code">nums[i + 1]</span> не вышел за пределы списка.</li>
+                <li><strong>Накопление ответа:</strong> счётчик <span class="code">count</span> увеличиваем на 1, а максимум обновляем через <span class="code">m = max(m, ...)</span>.</li>
+            </ul>
+
+            <div class="warning">
+                <strong>⚠️ Важно:</strong> последнюю цифру числа проверяйте через
+                <span class="code">abs(num) % 10</span>. В Python остаток от деления отрицательного
+                числа неотрицателен: <span class="code">-16 % 10 == 4</span>, поэтому без
+                <span class="code">abs()</span> число −16 «не заканчивается» на 6.
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Важно:</strong> стартовое значение <span class="code">min_num = 0</span>
+                корректно, только если в файле есть отрицательные числа, оканчивающиеся на 6
+                (минимум будет найден среди них). Если числа могут быть только положительными,
+                инициализируйте <span class="code">min_num = float('inf')</span> или используйте
+                приём из главы «Минимум по условию».
+            </div>
+        </section>
+
+        <section id="min-condition" class="section">
+            <h2><span class="emoji">🔽</span>Поиск минимума по условию</h2>
+
+            <p>
+                В заданиях 17 постоянно требуется найти минимальный или максимальный элемент,
+                удовлетворяющий условию (оканчивается на 6, делится на 3 и т.п.).
+                Есть два компактных способа сделать это без ручного цикла.
+            </p>
+
+            <h3>🛠️ Способ 1: генератор внутри min() / max()</h3>
+
+            <div class="task-card">
+                <h5 style="color: #495057; margin-top: 0;">💡 Минимум среди элементов, оканчивающихся на 6:</h5>
+                <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">min_num = min(x for x in nums if abs(x) % 10 == 6)</code></pre>
+                </div>
+                <div class="success" style="margin-top: 15px;">
+                    <strong>✅ Преимущество:</strong> самый надёжный способ — не нужно думать о начальном
+                    значении, в выборку попадают только подходящие элементы.
+                </div>
+            </div>
+
+            <h3>🛠️ Способ 2: параметр key у min() / max()</h3>
+
+            <p>
+                Функциям <span class="code">min()</span> и <span class="code">max()</span> можно передать
+                <span class="code">key</span> — функцию, по значению которой идёт сравнение.
+                «Отсекаем» лишние элементы, назначая им заведомо проигрышный ключ:
+            </p>
+
+            <div class="task-card">
+                <h5 style="color: #495057; margin-top: 0;">💡 Тот же поиск через key=lambda:</h5>
+                <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">min_num = min(nums, key=lambda x: x if abs(x) % 10 == 6 else float('inf'))</code></pre>
+                </div>
+                <p style="margin-top: 10px;">
+                    Логика: если элемент оканчивается на 6, его ключ — само число;
+                    иначе — <span class="code">float('inf')</span> (бесконечность), и такой элемент
+                    никогда не выиграет сравнение на минимум.
+                </p>
+                <div class="warning" style="margin-top: 10px;">
+                    <strong>⚠️ Ограничение:</strong> для <span class="code">min()</span> «отсекающий» ключ —
+                    это <span class="code">float('inf')</span>, для <span class="code">max()</span> —
+                    <span class="code">float('-inf')</span>. Если перепутать, получите неверный ответ.
+                </div>
+            </div>
+
+            <div class="table-container" style="margin-top: 20px;">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Способ</th>
+                        <th>Начальное значение</th>
+                        <th>Риск ошибки</th>
+                        <th>Рекомендация</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><strong>Ручной цикл</strong></td>
+                        <td>Нужно выбрать самому</td>
+                        <td>Неверный старт (0, max и т.п.)</td>
+                        <td>Когда условие сложное</td>
+                    </tr>
+                    <tr>
+                        <td><strong>min(x for x in ... if ...)</strong></td>
+                        <td>Не требуется</td>
+                        <td>Минимальный</td>
+                        <td>✅ Основной вариант</td>
+                    </tr>
+                    <tr>
+                        <td><strong>key=lambda</strong></td>
+                        <td>Не требуется</td>
+                        <td>Перепутанный «отсекающий» ключ</td>
+                        <td>Короткая запись в одну строку</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="xor" class="section">
+            <h2><span class="emoji">⚡</span>Исключающее ИЛИ (XOR) через !=</h2>
+
+            <p>
+                Условие «<strong>ровно один</strong> из двух элементов обладает свойством»
+                (например, запись ровно одного элемента пары заканчивается цифрой 6) —
+                это логическая операция <strong>исключающее ИЛИ</strong> (XOR):
+            </p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Первый элемент оканчивается на 6</th>
+                        <th>Второй элемент оканчивается на 6</th>
+                        <th>Ровно один (XOR)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr><td>нет (0)</td><td>нет (0)</td><td>0</td></tr>
+                    <tr><td>нет (0)</td><td>да (1)</td><td>1</td></tr>
+                    <tr><td>да (1)</td><td>нет (0)</td><td>1</td></tr>
+                    <tr><td>да (1)</td><td>да (1)</td><td>0</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p style="margin-top: 15px;">
+                Из таблицы видно: XOR истинен, когда значения <strong>различны</strong>.
+                Поэтому в Python исключающее ИЛИ двух булевых значений записывается обычным
+                сравнением <span class="code">!=</span>:
+            </p>
+
+            <div class="example-box">
+                <h4>📐 Приём: замена длинного условия на !=</h4>
+                <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python"># Длинная запись: «первый оканчивается на 6, а второй нет — или наоборот»
+(abs(nums[i]) % 10 == 6 and abs(nums[i + 1]) % 10 != 6) or (abs(nums[i]) % 10 != 6 and abs(nums[i + 1]) % 10 == 6)
+
+# Короткая запись — то же самое через исключающее ИЛИ
+(abs(nums[i]) % 10 == 6) != (abs(nums[i + 1]) % 10 == 6)</code></pre>
+                </div>
+            </div>
+
+            <div class="success">
+                <strong>✅ Почему работает:</strong> оба выражения в скобках имеют тип
+                <span class="code">bool</span>. Оператор <span class="code">!=</span> вернёт
+                <span class="code">True</span> ровно тогда, когда одно из них
+                <span class="code">True</span>, а другое — <span class="code">False</span>,
+                то есть когда условие выполняется ровно для одного элемента пары.
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Важно:</strong> приём работает только для условия «ровно один из двух».
+                Для «оба» используйте <span class="code">and</span>, для «хотя бы один» —
+                <span class="code">or</span>, для троек элементов — подсчёт, например
+                <span class="code">(усл1) + (усл2) + (усл3) == 1</span>
+                (<span class="code">True</span> считается за 1, <span class="code">False</span> — за 0).
+            </div>
+        </section>
+
+        <section id="all-pairs" class="section">
+            <h2><span class="emoji">🔁</span>Перебор любых двух элементов</h2>
+
+            <p>
+                Если под парой понимаются <strong>два различных элемента</strong> последовательности
+                и порядок в паре не важен, нужен двойной цикл. Чтобы не рассматривать одну и ту же
+                пару дважды и не брать элемент «в пару с самим собой», внутренний цикл начинается
+                с <span class="code">i + 1</span>.
+            </p>
+
+            <div class="task-card">
+                <h4>Задача:</h4>
+                <p>
+                    В файле содержится последовательность из 10 000 целых положительных чисел.
+                    Каждое число не превышает 10 000. Определите количество пар элементов,
+                    для которых произведение делится без остатка на 10, и максимальную из сумм
+                    элементов таких пар. Под парой подразумеваются два различных элемента
+                    последовательности, порядок элементов в паре не важен.
+                </p>
+                <p style="margin-top: 10px;">Фрагмент файла <span class="code">17.2.txt</span>:</p>
+                <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-none">5500
+6971
+3572
+7600
+2822
+5687
+9741
+8623
+7954
+1029
+9913
+380
+7965
+3679
+2626
+3699
+7972</code></pre>
+                </div>
+
+                <h4>Решение:</h4>
+
+                <h5 style="color: #495057; margin-top: 25px;">💡 Двойной цикл по всем парам:</h5>
+                <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">nums = list(map(int, open('17.2.txt').readlines()))
+
+count = 0
+m = -20001  # стартовое значение меньше любой возможной суммы пары (максимум 10000 + 9999)
+for i in range(len(nums)):
+    for j in range(i + 1, len(nums)):
+        if (nums[i] * nums[j]) % 10 == 0:
+            count += 1
+            if nums[i] + nums[j] &gt; m:
+                m = nums[i] + nums[j]
+print(count, m)  # Ответ: 13510315 19999</code></pre>
+                </div>
+                <div class="success" style="margin-top: 15px;">
+                    <strong>✅ Почему j начинается с i + 1:</strong> каждая пара рассматривается ровно
+                    один раз, элемент не образует пару сам с собой, а пары (a, b) и (b, a)
+                    не дублируются — именно это и требует условие «порядок не важен».
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Важно:</strong> не называйте переменную <span class="code">max</span> или
+                <span class="code">min</span> — так перекрываются встроенные функции Python,
+                и последующий вызов <span class="code">max(...)</span> сломается.
+                Используйте имена вроде <span class="code">m</span>,
+                <span class="code">max_sum</span>, <span class="code">ans</span>.
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Производительность:</strong> двойной цикл — это O(n²). Для 10 000 чисел
+                получится около 50 млн пар — Python справится за десятки секунд. Если файл заметно
+                больше или программа не успевает, перепишите условие через подсчёт по группам
+                (например, произведение делится на 10, если один из множителей делится на 10,
+                или один чётный, а другой делится на 5).
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <h2><span class="emoji">🎓</span>Заключение</h2>
+        <p>Задание 17 — это всегда чтение файла в список чисел и перебор пар по шаблону.</p>
+        <br>
+        <p><strong>Помните:</strong></p>
+        <ul style="text-align: left; display: inline-block;">
+            <li><span class="code" style="color: #aed6f1;">list(map(int, open(...).readlines()))</span> — универсальное чтение файла</li>
+            <li>Соседние пары: один цикл до <span class="code" style="color: #aed6f1;">len(nums) - 1</span></li>
+            <li>Любые два элемента: двойной цикл, внутренний — с <span class="code" style="color: #aed6f1;">i + 1</span></li>
+            <li>Последняя цифра отрицательного числа — только через <span class="code" style="color: #aed6f1;">abs()</span></li>
+            <li>«Ровно один из двух» — это <span class="code" style="color: #aed6f1;">!=</span> (исключающее ИЛИ)</li>
+            <li>Минимум по условию: <span class="code" style="color: #aed6f1;">min(x for x in nums if ...)</span></li>
+        </ul>
+    </footer>
+</div>
+
+<a href="#" class="back-to-top" id="backToTop">↑</a>
+
+<script>
+    window.addEventListener('scroll', function() {
+        const backToTop = document.getElementById('backToTop');
+        if (window.pageYOffset > 300) {
+            backToTop.classList.add('visible');
+        } else {
+            backToTop.classList.remove('visible');
+        }
+    });
+
+    document.getElementById('backToTop').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    window.addEventListener('scroll', function() {
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.nav a');
+        let current = '';
+        sections.forEach(section => {
+            if (pageYOffset >= section.offsetTop - 200) {
+                current = section.getAttribute('id');
+            }
+        });
+        navLinks.forEach(link => {
+            link.style.background = '';
+            if (link.getAttribute('href') === '#' + current) {
+                link.style.background = '#3498db';
+            }
+        });
+    });
+</script>
+<script src="../assets/js/prism.js"></script>
+</body>
+</html>
