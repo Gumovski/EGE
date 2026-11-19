@@ -11,13 +11,13 @@ for i in range(len(s) - 1):
     flag = 0
     if ((s[i] < 0 and s[i+1] >= 0) or (s[i] > 0 and s[i+1] <= 0)) and s[i] + s[i+1] > m:
         c += 1
-        res.append(s[i] ** 2 + 2 *s[i]*s[i+1] + s[i+1]**2)
+        res.append(s[i]**2 + s[i+1]**2)
 res.sort()
 print(c,res[0])
 
 
-answer1 = ...
-answer2 = ...
+answer1 = 2628
+answer2 = 504410
 
 #
 
