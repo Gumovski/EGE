@@ -1,6 +1,6 @@
 # Решение
 
-s = list(map(int,open('Задание 1701.txt').readlines()))
+s = list(map(int,open('-Задание 1701.txt').readlines()))
 c = 0
 res = []
 m = -10000
@@ -16,8 +16,8 @@ res.sort()
 print(c,res[0])
 
 
-answer1 = 2628
-answer2 = 81
+answer1 = ...
+answer2 = ...
 
 #
 
