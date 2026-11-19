@@ -1,4 +1,18 @@
 # Решение
+f = {}
+
+for n in range(0,10000000):
+    if n == 0:
+        f[n] = 0
+    elif n > 0 and n % 4 < 2:
+        f[n] = f[n//4] + n%4
+    elif n% 4 >= 2:
+        f[n] = f[n//4] + n % 4 - 1
+
+for i in range(0,10000000):
+    if f[i] == 27 and f[i + 1] == 16:
+        print(i)
+        break
 
 
 
